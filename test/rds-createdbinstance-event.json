@@ -1,0 +1,194 @@
+{
+  "version": "0",
+  "id": "465d3464-5cd5-96ae-24ea-000001b8a7b8",
+  "detail_type": "AWS API Call via CloudTrail",
+  "source": "aws.rds",
+  "account_id": "123456789000",
+  "time": "2020-01-11T14:58:13Z",
+  "region": "us-east-1",
+  "resources": [],
+  "detail": {
+    "awsRegion": "us-east-1",
+    "eventCategory": "Management",
+    "eventID": "1395cce3-0f02-4217-8ffc-000006f100b8",
+    "eventName": "CreateDBInstance",
+    "eventSource": "rds.amazonaws.com",
+    "eventTime": "2020-01-11T14:58:13Z",
+    "eventType": "AwsApiCall",
+    "eventVersion": "1.08",
+    "managementEvent": true,
+    "readOnly": false,
+    "recipientAccountId": "123456789000",
+    "requestID": "860134b3-e729-407b-a714-0000054b62dc",
+    "requestParameters": {
+      "allocatedStorage": 10,
+      "dBInstanceClass": "db.t3.small",
+      "dBInstanceIdentifier": "db-test-x01",
+      "dBSubnetGroupName": "db-x01",
+      "engine": "postgres",
+      "engineVersion": "15",
+      "masterUserPassword": "****",
+      "masterUsername": "xadmin",
+      "tags": [
+        {
+          "key": "App",
+          "value": "dbx01"
+        },
+        {
+          "key": "Product",
+          "value": "yyy"
+        },
+        {
+          "key": "Squad",
+          "value": "xxx"
+        },
+        {
+          "key": "Tier",
+          "value": "yyy"
+        },
+        {
+          "key": "Environment",
+          "value": "development"
+        }
+      ],
+      "vpcSecurityGroupIds": [
+        "sg-01"
+      ]
+    },
+    "responseElements": {
+      "allocatedStorage": 10,
+      "associatedRoles": [],
+      "autoMinorVersionUpgrade": true,
+      "backupRetentionPeriod": 1,
+      "backupTarget": "region",
+      "cACertificateIdentifier": "rds-ca-2019",
+      "certificateDetails": {
+        "cAIdentifier": "rds-ca-2019"
+      },
+      "copyTagsToSnapshot": false,
+      "customerOwnedIpEnabled": false,
+      "dBInstanceArn": "arn:aws:rds:us-east-1:123456789000:db:db-test-x01",
+      "dBInstanceClass": "db.t3.small",
+      "dBInstanceIdentifier": "db-test-x01",
+      "dBInstanceStatus": "creating",
+      "dBParameterGroups": [
+        {
+          "dBParameterGroupName": "default.postgres15",
+          "parameterApplyStatus": "in-sync"
+        }
+      ],
+      "dBSecurityGroups": [],
+      "dBSubnetGroup": {
+        "dBSubnetGroupDescription": "x01 subnet group",
+        "dBSubnetGroupName": "db-x01",
+        "subnetGroupStatus": "Complete",
+        "subnets": [
+          {
+            "subnetAvailabilityZone": {
+              "name": "us-east-1d"
+            },
+            "subnetIdentifier": "subnet-01",
+            "subnetOutpost": {},
+            "subnetStatus": "Active"
+          },
+          {
+            "subnetAvailabilityZone": {
+              "name": "us-east-1a"
+            },
+            "subnetIdentifier": "subnet-01",
+            "subnetOutpost": {},
+            "subnetStatus": "Active"
+          }
+        ],
+        "vpcId": "vpc-01"
+      },
+      "dbInstancePort": 0,
+      "dbiResourceId": "db-01U",
+      "dedicatedLogVolume": false,
+      "deletionProtection": false,
+      "domainMemberships": [],
+      "engine": "postgres",
+      "engineVersion": "15.2",
+      "httpEndpointEnabled": false,
+      "iAMDatabaseAuthenticationEnabled": false,
+      "licenseModel": "postgresql-license",
+      "masterUsername": "xadmin",
+      "monitoringInterval": 0,
+      "multiAZ": false,
+      "networkType": "IPV4",
+      "optionGroupMemberships": [
+        {
+          "optionGroupName": "default:postgres-15",
+          "status": "in-sync"
+        }
+      ],
+      "pendingModifiedValues": {
+        "masterUserPassword": "****"
+      },
+      "performanceInsightsEnabled": false,
+      "preferredBackupWindow": "09:34-10:04",
+      "preferredMaintenanceWindow": "tue:06:35-tue:07:05",
+      "publiclyAccessible": false,
+      "readReplicaDBInstanceIdentifiers": [],
+      "storageEncrypted": false,
+      "storageThroughput": 0,
+      "storageType": "gp2",
+      "tagList": [
+        {
+          "key": "App",
+          "value": "dbx01"
+        },
+        {
+          "key": "Environment",
+          "value": "development"
+        },
+        {
+          "key": "Product",
+          "value": "yyy"
+        },
+        {
+          "key": "Squad",
+          "value": "xxx"
+        },
+        {
+          "key": "Tier",
+          "value": "yyy"
+        }
+      ],
+      "vpcSecurityGroups": [
+        {
+          "status": "active",
+          "vpcSecurityGroupId": "sg-01"
+        }
+      ]
+    },
+    "sourceIPAddress": "1.1.1.1",
+    "tlsDetails": {
+      "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+      "clientProvidedHostHeader": "rds.us-east-1.amazonaws.com",
+      "tlsVersion": "TLSv1.2"
+    },
+    "userAgent": "aws-cli/2.4.17 Python/3.8.8 Darwin/20.6.0 exe/x86_64 prompt/off command/rds.create-db-instance",
+    "userIdentity": {
+      "accessKeyId": "ABCDE",
+      "accountId": "123456789000",
+      "arn": "arn:aws:sts::0123456789000:assumed-role/AdministratorAccess",
+      "principalId": "00001",
+      "sessionContext": {
+        "attributes": {
+          "creationDate": "2020-01-11T12:06:41Z",
+          "mfaAuthenticated": "false"
+        },
+        "sessionIssuer": {
+          "accountId": "123456789000",
+          "arn": "arn:aws:iam::123456789000:role/aws-reserved/sso.amazonaws.com/AdministratorAccess",
+          "principalId": "00001",
+          "type": "Role",
+          "userName": "AdministratorAccess"
+        },
+        "webIdFederationData": {}
+      },
+      "type": "AssumedRole"
+    }
+  }
+}
