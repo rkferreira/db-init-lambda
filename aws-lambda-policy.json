@@ -1,0 +1,28 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds",
+                "secretsmanager:PutSecretValue",
+                "secretsmanager:UpdateSecret",
+                "secretsmanager:GetRandomPassword",
+                "secretsmanager:ListSecrets",
+                "secretsmanager:CreateSecret"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "ArnLike": {
+                    "secretsmanager:SecretId": [
+                        "arn:aws:secretsmanager:*:*:secret:*db*"
+                    ]
+                }
+            }
+        }
+    ]
+}

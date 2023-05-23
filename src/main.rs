@@ -7,12 +7,15 @@ use aws_config;
 use tokio_postgres as PgClient;
 use rustls;
 use tokio_postgres_rustls;
+use tokio::time::{sleep, Duration};
 use serde_json as json;
 use serde::Deserialize;
 use std::io::BufReader;
 use std::collections::HashMap;
+use rand::{Rng, thread_rng};
+use rand::distributions::Alphanumeric;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct RdsEndpoint {
     endpoint: String,
     port: i32,
@@ -20,10 +23,17 @@ struct RdsEndpoint {
     app_tag: String,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 struct RdsCreds {
     username: String,
     password: String,
+}
+
+#[derive(Debug, Default, Clone, Deserialize)]
+struct RdsPasswords {
+    application: String,
+    migration: String,
+    dbowner: String,
 }
 
 
@@ -65,8 +75,14 @@ async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Err
         let rds_creds = get_secret(&sm_client, &sm_name).await?;
         //println!("{:?}", rds_creds);
 
+        // Generate random passwords
+        let n_rds_pass: RdsPasswords = (generate_random_pass().await).unwrap();
+
         // Call postgress
-        let pg = pg(re, rds_creds).await?;
+        let _pg = pg(re.clone(), rds_creds, &n_rds_pass).await?;
+
+        // Save screts to sm
+        save_secrets(&n_rds_pass, re, &sm_client).await?;
     }
     println!("::Ending ...");
     Ok(())
@@ -78,11 +94,11 @@ async fn function_handler(event: LambdaEvent<CloudWatchEvent>) -> Result<(), Err
 async fn get_endpoint(client: &rds::Client, arn: &String) -> Result<RdsEndpoint, Error> {
     println!(":::Starting get_endpoint ...");
     // Aws client
-    let result = client.describe_db_instances().db_instance_identifier(arn).send().await?;
+    let mut result = client.describe_db_instances().db_instance_identifier(arn).send().await?;
 
     // Initialization
     let mut r: RdsEndpoint = Default::default();
-    let db: &rds::types::DbInstance;
+    let mut db: &rds::types::DbInstance;
     // Tags structures
     let t: rds::types::builders::TagBuilder = rds::types::Tag::builder();
     let tags: Vec<rds::types::Tag>;
@@ -92,6 +108,13 @@ async fn get_endpoint(client: &rds::Client, arn: &String) -> Result<RdsEndpoint,
     // Can I desconstruct db_instances in Some?
     if let Some(i) = result.db_instances() {
         db = &i[0];       // we should get just one result as using aws arn
+   
+        // CreateDbInstance event, db is not ready yet. I feel happy producing ugly code
+        while let None = db.endpoint() {
+            sleep(Duration::from_millis(300000)).await;
+            result = client.describe_db_instances().db_instance_identifier(arn).send().await?;
+            db = &result.db_instances().unwrap()[0];
+        }
 
         // Filling RdsEndpoint struct
         r.endpoint = db.endpoint().unwrap().address().unwrap().to_string();
@@ -132,13 +155,16 @@ async fn get_secret(client: &secretsmanager::Client, name: &str) -> Result<RdsCr
 }
 
 
-async fn pg(db: RdsEndpoint, pw: RdsCreds) -> Result<(), Error> {
+async fn pg(db: RdsEndpoint, pw: RdsCreds, npw: &RdsPasswords) -> Result<(), Error> {
     println!(":::Starting pg ...");
     // Creating cert store
     let custom_cert = include_bytes!("global-bundle.pem");
     let mut reader = BufReader::new(&custom_cert[..]);
     let mut cert_store = rustls::RootCertStore::empty();
     cert_store.add_parsable_certificates(&rustls_pemfile::certs(&mut reader).unwrap());
+
+    // Include function
+    let pg_function = include_str!("function.in");
 
     // Rustls client config
     let config = rustls::ClientConfig::builder()
@@ -156,12 +182,37 @@ async fn pg(db: RdsEndpoint, pw: RdsCreds) -> Result<(), Error> {
             eprintln!("   connection error: {}", e);
         }
     });
-
+    
     // Use conneciton
     println!("   connecting ... ");
     let rows = client.query_one("SELECT 1", &[]).await?;
-    println!("   {:?}", rows);
+    println!("   check conn  {:?}", rows);
+    let f_batch = client.batch_execute(pg_function).await?;
+    println!("  create role_config function result:  {:?}", f_batch);
+    let rows2 = client.query("SELECT role_config(true,true,null,null,null, $1, $2, $3)", &[&npw.application, &npw.migration, &npw.dbowner]).await?;
+    println!("  execute role_config result  {:?}", rows2);
     println!(":::Finalizing pg");
+    Ok(())
+}
+
+async fn generate_random_pass() -> Result<RdsPasswords, ()> {
+    let mut rng = thread_rng();
+    let app = (0..13).map(|_| rng.sample(Alphanumeric) as char).collect();
+    let mig = (0..13).map(|_| rng.sample(Alphanumeric) as char).collect();
+    let dbo = (0..13).map(|_| rng.sample(Alphanumeric) as char).collect();
+
+    Ok(RdsPasswords { application: app, migration: mig, dbowner: dbo })
+}
+
+async fn save_secrets(p: &RdsPasswords, re: RdsEndpoint, client: &secretsmanager::Client) -> Result<(), Error> {
+    let sm_app = format!("{}-{}-application-conn-string", re.app_tag, re.db_identifier);
+    let sm_mig = format!("{}-{}-migration-conn-string", re.app_tag, re.db_identifier);
+    let sm_dbo = format!("{}-{}-dbowner-conn-string", re.app_tag, re.db_identifier);
+
+    println!("Saving generated secrets for application, migration and dbowner");
+    client.create_secret().name(sm_app).secret_string(&p.application).send().await?;
+    client.create_secret().name(sm_mig).secret_string(&p.migration).send().await?;
+    client.create_secret().name(sm_dbo).secret_string(&p.dbowner).send().await?;
     Ok(())
 }
 

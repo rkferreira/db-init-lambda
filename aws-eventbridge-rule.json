@@ -1,0 +1,8 @@
+{
+  "source": ["aws.rds"],
+  "detail-type": ["AWS API Call via CloudTrail"],
+  "detail": {
+    "eventSource": ["rds.amazonaws.com"],
+    "eventName": ["CreateDBInstance"]
+  }
+}

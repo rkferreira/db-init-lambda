@@ -3,31 +3,24 @@ name = "db-init-lambda"
 version = "0.1.0"
 edition = "2021"
 
-# Starting in Rust 1.62 you can use `cargo add` to add dependencies 
-# to your project.
-#
-# If you're using an older Rust version,
-# download cargo-edit(https://github.com/killercup/cargo-edit#installation) 
-# to install the `add` subcommand.
-#
-# Running `cargo add DEPENDENCY_NAME` will
-# add the latest version of a dependency to the list,
-# and it will keep the alphabetic ordering for you.
+[package.metadata.lambda.deploy]
+memory = 128
+timeout = 900
+role = "arn:aws:iam::000111:role/db-init-lambda-cargo-deploy"
 
 [dependencies]
 aws_lambda_events = { version = "0.7", default-features = false, features = ["cloudwatch_events"] }
 aws-config = "0.55"
 aws-sdk-rds = "0.27"
 aws-sdk-secretsmanager = "0.27"
-pem = "*"
-tokio-postgres = "*"
-tokio-postgres-rustls = "0.10"
+lambda_runtime = "0.8"
+rand = "0.8"
 rustls = "0.21"
 rustls-pemfile = "1.0"
-lambda_runtime = "0.8"
-serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tokio = { version = "1", features = ["macros"] }
+serde_json = "1.0"
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
-
+tokio = { version = "1", features = ["macros"] }
+tokio-postgres = "0.7"
+tokio-postgres-rustls = "0.10"
